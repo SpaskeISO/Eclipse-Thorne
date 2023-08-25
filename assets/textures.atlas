@@ -1,0 +1,272 @@
+
+textures.png
+size: 2048, 2048
+format: RGBA8888
+filter: Nearest, Nearest
+repeat: none
+bird_man
+  rotate: false
+  xy: 2, 596
+  size: 70, 83
+  orig: 70, 83
+  offset: 0, 0
+  index: -1
+bird_warrior
+  rotate: false
+  xy: 2, 681
+  size: 73, 121
+  orig: 73, 121
+  offset: 0, 0
+  index: -1
+eye_flayer
+  rotate: false
+  xy: 77, 688
+  size: 59, 52
+  orig: 59, 52
+  offset: 0, 0
+  index: -1
+firearrow
+  rotate: false
+  xy: 1028, 1353
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+firearrow-new
+  rotate: false
+  xy: 1028, 1287
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+fying_deamon
+  rotate: false
+  xy: 1028, 1091
+  size: 58, 62
+  orig: 58, 62
+  offset: 0, 0
+  index: -1
+giant_monster
+  rotate: false
+  xy: 1028, 1746
+  size: 80, 82
+  orig: 80, 82
+  offset: 0, 0
+  index: -1
+gray_goblin
+  rotate: false
+  xy: 1704, 1782
+  size: 43, 46
+  orig: 43, 46
+  offset: 0, 0
+  index: -1
+lizard
+  rotate: false
+  xy: 1028, 1683
+  size: 68, 61
+  orig: 68, 61
+  offset: 0, 0
+  index: -1
+mushroom
+  rotate: false
+  xy: 173, 742
+  size: 49, 60
+  orig: 49, 60
+  offset: 0, 0
+  index: -1
+octo
+  rotate: false
+  xy: 77, 742
+  size: 94, 60
+  orig: 94, 60
+  offset: 0, 0
+  index: -1
+player-cast
+  rotate: false
+  xy: 1110, 1764
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 7
+player-cast
+  rotate: false
+  xy: 2, 464
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 4
+player-cast
+  rotate: false
+  xy: 2, 398
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 1
+player-cast
+  rotate: false
+  xy: 1308, 1764
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 6
+player-cast
+  rotate: false
+  xy: 2, 266
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 3
+player-cast
+  rotate: false
+  xy: 1506, 1764
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 8
+player-cast
+  rotate: false
+  xy: 1028, 1221
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 5
+player-cast
+  rotate: false
+  xy: 1638, 1764
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 2
+player-die
+  rotate: false
+  xy: 1028, 1617
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 4
+player-die
+  rotate: false
+  xy: 1028, 1551
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 1
+player-idle
+  rotate: false
+  xy: 1028, 1551
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 1
+player-die
+  rotate: false
+  xy: 1028, 1485
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 6
+player-die
+  rotate: false
+  xy: 1028, 1419
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 3
+player-die
+  rotate: false
+  xy: 1440, 1764
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 8
+player-die
+  rotate: false
+  xy: 2, 134
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 5
+player-die
+  rotate: false
+  xy: 2, 68
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 2
+player-die
+  rotate: false
+  xy: 2, 2
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 7
+player-move
+  rotate: false
+  xy: 2, 530
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 6
+player-move
+  rotate: false
+  xy: 1176, 1764
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 3
+player-move
+  rotate: false
+  xy: 1242, 1764
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 8
+player-move
+  rotate: false
+  xy: 2, 332
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 5
+player-move
+  rotate: false
+  xy: 1374, 1764
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 2
+player-move
+  rotate: false
+  xy: 2, 200
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 7
+player-move
+  rotate: false
+  xy: 1572, 1764
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 4
+player-move
+  rotate: false
+  xy: 1028, 1155
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 1
+wall1
+  rotate: false
+  xy: 2, 804
+  size: 1024, 1024
+  orig: 1024, 1024
+  offset: 0, 0
+  index: -1
+white
+  rotate: false
+  xy: 74, 678
+  size: 1, 1
+  orig: 1, 1
+  offset: 0, 0
+  index: -1
