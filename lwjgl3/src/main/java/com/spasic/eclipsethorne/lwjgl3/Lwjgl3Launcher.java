@@ -19,6 +19,7 @@ public class Lwjgl3Launcher {
         Lwjgl3ApplicationConfiguration configuration = new Lwjgl3ApplicationConfiguration();
         configuration.setTitle("EclipseThorne");
         configuration.useVsync(true);
+        configuration.setForegroundFPS(60);
         configuration.setMaximized(true);
         //// Limits FPS to the refresh rate of the currently active monitor.
         configuration.setForegroundFPS(Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate);

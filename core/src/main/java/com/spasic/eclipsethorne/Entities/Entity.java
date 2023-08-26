@@ -1,12 +1,11 @@
 package com.spasic.eclipsethorne.Entities;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.dongbat.jbump.Item;
-import com.spasic.eclipsethorne.EclipseThorne;
-import com.spasic.eclipsethorne.GameSreen;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,10 +13,11 @@ import lombok.Setter;
 @Setter
 public abstract class Entity {
 
-    public float movementSpeed;
+
 
     public Animation<TextureRegion> animation;
     public float animationTime;
+    public float SCALE = 1.0f;
 
     public float x;
     public float y;
@@ -25,11 +25,12 @@ public abstract class Entity {
     public float bboxY;
     public float bboxWidth;
     public float bboxHeight;
+    public float movementSpeed;
     public float angle = 0;
-    public boolean flipX = false;
-    public boolean flipY = false;
     public float deltaX;
     public float deltaY;
+    public boolean flipX = false;
+    public boolean flipY = false;
     public Vector2 direction;
 
     public int HP; //Health Points
@@ -45,7 +46,12 @@ public abstract class Entity {
         if (animation != null) {
             TextureRegion currentFrame = animation.getKeyFrame(animationTime, true);
             spriteBatch.setColor(color);
-            spriteBatch.draw(currentFrame, x, y, (float) currentFrame.getRegionWidth() / currentFrame.getRegionWidth() / 2, (float) currentFrame.getRegionHeight() / currentFrame.getRegionHeight() / 2, (float) currentFrame.getRegionWidth() / currentFrame.getRegionWidth(), (float) currentFrame.getRegionHeight() / currentFrame.getRegionHeight(), flipX ? -1 : 1, flipY ? -1 : 1, angle - 90);
+            spriteBatch.draw(currentFrame, x, y,
+            ((float) currentFrame.getRegionWidth() / currentFrame.getRegionWidth() / 2) * SCALE,
+            ((float) currentFrame.getRegionHeight() / currentFrame.getRegionHeight() / 2) * SCALE,
+            (float) currentFrame.getRegionWidth() / currentFrame.getRegionWidth() * SCALE,
+            (float) currentFrame.getRegionHeight() / currentFrame.getRegionHeight() * SCALE,
+                flipX ? -1 : 1, flipY ? -1 : 1, angle - 90);
             spriteBatch.setColor(Color.WHITE);
         }
     }

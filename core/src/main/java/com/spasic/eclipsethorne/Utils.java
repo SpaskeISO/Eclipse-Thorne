@@ -25,4 +25,9 @@ public class Utils {
         float delta = ((target - start + 360 + 180) % 360) - 180;
         return (start + Math.signum(delta) * MathUtils.clamp(increment, 0.0f, Math.abs(delta)) + 360) % 360;
     }
+
+    static boolean isValidPos(int i, int j, int n, int m)
+    {
+        return i >= 0 && j >= 0 && i <= n - 1 && j <= m - 1;
+    }
 }

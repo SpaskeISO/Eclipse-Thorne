@@ -6,23 +6,29 @@ import com.dongbat.jbump.Item;
 import lombok.Getter;
 import lombok.Setter;
 
-import static com.spasic.eclipsethorne.GameSreen.textureAtlas;
+import static com.spasic.eclipsethorne.GameSreen.*;
 
 @Getter
 @Setter
 public class BasicBlock extends Entity{
 
 
-    public static final Animation<TextureRegion> wall1Animation = new Animation<TextureRegion>(1, textureAtlas.findRegions("wall1"), Animation.PlayMode.LOOP);
+    public static final Animation<TextureRegion> wall1Animation = new Animation<TextureRegion>(1, textureAtlas.findRegions("wall-1"), Animation.PlayMode.LOOP);
 
 
-    public BasicBlock(){
-
+    public BasicBlock(float x, float y){
+        this.x = x;
+        this.y = y;
+        TextureRegion temp = wall1Animation.getKeyFrame(0, true);
         bboxX = 0;
         bboxY = 0;
-        bboxWidth =  (float) (animation.getKeyFrames()[0].getRegionWidth() / animation.getKeyFrames()[0].getRegionWidth());
-        bboxHeight = (float) (animation.getKeyFrames()[0].getRegionHeight() / animation.getKeyFrames()[0].getRegionHeight());
+        bboxWidth =  (float) (temp.getRegionWidth() / temp.getRegionWidth());
+        bboxHeight = (float) (temp.getRegionHeight() / temp.getRegionHeight());
         item = new Item<>(this);
+        entities.add(this);
+        world.add(item, this.x, this.y, bboxWidth, bboxHeight);
+
+        animation = wall1Animation;
     }
 
     @Override

@@ -2,13 +2,10 @@ package com.spasic.eclipsethorne.Entities;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.*;
 import com.dongbat.jbump.*;
 import com.spasic.eclipsethorne.EclipseThorne;
 import com.spasic.eclipsethorne.GameSreen;
@@ -23,17 +20,23 @@ import static com.spasic.eclipsethorne.GameSreen.*;
 public class Player extends Entity{
 
     public static PlayerCollisionFilter PLAYER_COLLISION_FILTER = new PlayerCollisionFilter();
-    public static final float CAST_DELAY = 2.0f;
-    public float castTimer;
+    public static final float CAST_DELAY = 1.0f;
+    public static final float INVULNERABILITY_TIME = 1.5f;
+
     public static final Animation<TextureRegion> walkingAnimation = new Animation<TextureRegion>(1/16f, textureAtlas.findRegions("player-move"), Animation.PlayMode.LOOP);
     public static final Animation<TextureRegion> dyingAnimation = new Animation<TextureRegion>(1/16f, textureAtlas.findRegions("player-die"), Animation.PlayMode.LOOP);
     public static final Animation<TextureRegion> castingAnimation = new Animation<TextureRegion>(1/8f, textureAtlas.findRegions("player-cast"), Animation.PlayMode.LOOP);
     public static final Animation<TextureRegion> idleAnimation = new Animation<TextureRegion>(1, textureAtlas.findRegions("player-idle"), Animation.PlayMode.LOOP);
+
     public boolean isDead = false;
+    public float castTimer;
+    public float invulnerabilityTimer;
+
+
     public Player(){
         this.movementSpeed = 7.5f;
         castTimer = CAST_DELAY;
-        HP = 10;
+        HP = 100;
 
         TextureRegion temp = idleAnimation.getKeyFrame(0, true);
         x = EclipseThorne.WORLD_WIDTH / 2.0f;
@@ -55,7 +58,14 @@ public class Player extends Entity{
 
     public void act(float delta){
         if (!isDead) {
+            if(deltaX != 0 && deltaY != 0){
+                x += deltaX;
+                y += deltaY;
+            }
+            deltaX = 0;
+            deltaY = 0;
             animationTime+=delta;
+
 
             //Movement
             boolean left = Gdx.input.isKeyPressed(Input.Keys.A);
@@ -79,6 +89,7 @@ public class Player extends Entity{
             if(down){
                 y -= movementSpeed * delta;
             }
+            direction = new Vector2(MathUtils.cosDeg(angle), MathUtils.sinDeg(angle));
 
 
             if(leftClick){
@@ -99,10 +110,19 @@ public class Player extends Entity{
                 if (castTimer < 0) castTimer = 0;
             }
 
+            if(invulnerabilityTimer > 0){
+                invulnerabilityTimer -= delta;
+                if(invulnerabilityTimer < 0) invulnerabilityTimer = 0;
+            }
+
+            if(invulnerabilityTimer <= 0 && color != Color.WHITE){
+                color = Color.WHITE;
+            }
+
             if (leftClick && castTimer == 0) {
                 castTimer = CAST_DELAY;
                 //arrowSound.play();
-                magicBolt magicBolt = new magicBolt(angle, (player.x), (player.y));
+                MagicBolt magicBolt = new MagicBolt(angle, (player.x), (player.y));
                 magicBolt.x = ((player.x + bboxX + (player.bboxWidth / 2.0f) * magicBolt.direction.x));
                 magicBolt.y = ((player.y + bboxY + (player.bboxHeight / 2.0f * magicBolt.direction.y)));
                 entities.add(magicBolt);
@@ -121,16 +141,24 @@ public class Player extends Entity{
             for (int i = 0; i < result.projectedCollisions.size(); i++) {
                 Collision collision = result.projectedCollisions.get(i);
                 if (collision.other.userData instanceof Enemy) {
+
                     Enemy enemy = (Enemy) collision.other.userData;
                     if (!enemy.isDying()) {
-                        //ran into enemy: kill the player
-                        die();
-//                    entities.removeValue(this, true);
-//                    if (item != null) {
-//                        world.remove(item);
-//                        item = null;
-//                    }
+                        if(invulnerabilityTimer <= 0 && color == Color.WHITE){
+                            HP -= enemy.AP;
+                            invulnerabilityTimer = INVULNERABILITY_TIME;
+                            color = Color.GOLD;
+                        }
+
+                        deltaX = movementSpeed * 100 * enemy.facing.x < 0 ? -1 : 1 * enemy.direction.x;
+                        deltaY = movementSpeed * 100 * enemy.facing.y < 0 ? -1 : 1 * enemy.direction.y;
+
+                        if(HP <= 0){
+                            die();
+                        }
                     }
+
+
                 }
             }
 
@@ -176,7 +204,8 @@ public class Player extends Entity{
     public static class PlayerCollisionFilter implements CollisionFilter {
         @Override
         public Response filter(Item item, Item other) {
-            if (other.userData instanceof Enemy) return Response.bounce;
+            if (other.userData instanceof Enemy) return Response.cross;
+            else if(other.userData instanceof BasicBlock) return Response.cross;
             else return null;
         }
     }

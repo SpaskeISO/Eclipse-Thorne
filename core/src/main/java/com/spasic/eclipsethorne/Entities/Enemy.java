@@ -2,7 +2,6 @@ package com.spasic.eclipsethorne.Entities;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -27,32 +26,52 @@ public class Enemy extends Entity{
     public static final Vector2 vector2 = new Vector2();
     public float rotation;
     public boolean boss;
+    public boolean dying = false;
     public float deathTimer;
     public Vector2 facing;
     public EnemyType enemyType;
+    public float bounceX, bounceY;
 
     public Enemy(EnemyType enemyType, float x, float y){
-        HP = 1;
-        AP = 1;
         this.enemyType = enemyType;
         switch (this.enemyType){
             case OCTO: animation = octoAnimation;
+                HP = 10;
+                AP = 5;
                 break;
             case LIZARD: animation = lizardAnimation;
+                HP = 20;
+                AP = 5;
                 break;
             case BIRD_MAN: animation = bird_manAnimation;
+                HP = 10;
+                AP = 10;
                 break;
             case MUSHROOM: animation = mushroomAnimation;
+                HP = 10;
+                AP = 5;
                 break;
             case EYE_FLAYER: animation = eye_flayerAnimation;
+                HP = 10;
+                AP = 10;
                 break;
             case GRAY_GOBLIN: animation = gray_goblinAnimation;
+                HP = 20;
+                AP = 5;
                 break;
             case BIRD_WARRIOR: animation = bird_warriorAnimation;
+                HP = 20;
+                AP = 15;
                 break;
             case FYING_DEAMON: animation = fying_deamonAnimation;
+                HP = 20;
+                AP = 10;
                 break;
             case GIANT_MONSTER: animation = giant_monsterAnimation;
+                HP = 30;
+                AP = 20;
+                SCALE = 1.5f;
+                break;
         }
         this.x = x;
         this.y = y;
@@ -62,19 +81,19 @@ public class Enemy extends Entity{
         this.boss = 0.1 >= MathUtils.random(1.0f);
         if(boss){
             color = Color.RED;
-            bboxWidth = (float) (animation.getKeyFrames()[0].getRegionWidth() / animation.getKeyFrames()[0].getRegionWidth()) * 2;
-            bboxHeight = (float) (animation.getKeyFrames()[0].getRegionHeight() / animation.getKeyFrames()[0].getRegionHeight()) * 2;
+            SCALE = 2.0f;
+            HP *= 3;
         }
-        else{
-            bboxWidth = (float) (animation.getKeyFrames()[0].getRegionWidth() / animation.getKeyFrames()[0].getRegionWidth());
-            bboxHeight = (float) (animation.getKeyFrames()[0].getRegionHeight() / animation.getKeyFrames()[0].getRegionHeight());
-        }
+        bboxWidth = (float) (animation.getKeyFrames()[0].getRegionWidth() / animation.getKeyFrames()[0].getRegionWidth()) * SCALE;
+        bboxHeight = (float) (animation.getKeyFrames()[0].getRegionHeight() / animation.getKeyFrames()[0].getRegionHeight()) * SCALE;
+
+
         this.angle = 90;
         this.direction = new Vector2();
         this.facing = new Vector2();
 
-
-
+        bounceX = 0;
+        bounceY = 0;
 
 
 
@@ -87,6 +106,12 @@ public class Enemy extends Entity{
 
     @Override
     public void act(float delta) {
+        if(bounceX != 0 && bounceY != 0){
+            x += bounceX;
+            y += bounceY;
+        }
+        bounceX = 0;
+        bounceY = 0;
 
         if (deathTimer <= 0) {
             //update animation frame
@@ -126,6 +151,38 @@ public class Enemy extends Entity{
 
                 }
             }
+            else if (other instanceof Player){
+
+                Vector2 playerPosition = new Vector2(player.x, player.y);
+                Vector2 enemyPosition = new Vector2(x, y);
+                float temp = 0;
+                temp = MathUtils.atan2(playerPosition.y - enemyPosition.y, playerPosition.x - enemyPosition.x);
+
+                temp *= MathUtils.radiansToDegrees;
+
+                bounceX = movementSpeed / 2 * MathUtils.cosDeg(temp + 180);
+                bounceY = movementSpeed / 2 * MathUtils.sinDeg(temp + 180);
+            }
+            else if(other instanceof MagicBolt){
+                MagicBolt magicBolt = (MagicBolt) other;
+                magicBolt.HP = 0;
+                Vector2 magicBoltPosition = new Vector2(magicBolt.x, magicBolt.y);
+                Vector2 enemyPosition = new Vector2(x, y);
+                float temp = 0;
+                temp = MathUtils.atan2(magicBoltPosition.y - enemyPosition.y, magicBoltPosition.x - enemyPosition.x);
+
+                temp *= MathUtils.radiansToDegrees;
+
+                bounceX = movementSpeed / 4 * MathUtils.cosDeg(temp + 180);
+                bounceY = movementSpeed / 4 * MathUtils.sinDeg(temp + 180);
+
+                //ran into enemy: kill magicBolt
+                entities.removeValue(magicBolt, true);
+                if (magicBolt.item != null) {
+                    world.remove(magicBolt.item);
+                    magicBolt.item = null;
+                }
+            }
         }
 
         //update position based on collisions
@@ -133,14 +190,6 @@ public class Enemy extends Entity{
         x = rect.x - bboxX;
         y = rect.y - bboxY;
 
-        //handle death
-        if (deathTimer > 0) {
-            deathTimer -= delta;
-            if (deathTimer <= 0) {
-                entities.removeValue(this, true);
-                world.remove(item);
-            }
-        }
 
         //handle death
         if (deathTimer > 0) {
@@ -160,32 +209,17 @@ public class Enemy extends Entity{
     }
 
     public void die() {
+        dying = true;
         color = Color.DARK_GRAY;
         deathTimer = DEATH_TIME;
     }
 
-    @Override
-    public void draw(SpriteBatch spriteBatch) {
-        if (animation != null) {
-            TextureRegion currentFrame = animation.getKeyFrame(animationTime, true);
-            spriteBatch.setColor(color);
-            if(!boss){
-                spriteBatch.draw(currentFrame, x, y, (float) currentFrame.getRegionWidth() / currentFrame.getRegionWidth() / 2, (float) currentFrame.getRegionHeight() / currentFrame.getRegionHeight() / 2, (float) currentFrame.getRegionWidth() / currentFrame.getRegionWidth(), (float) currentFrame.getRegionHeight() / currentFrame.getRegionHeight(), flipX ? -1 : 1, flipY ? -1 : 1, angle - 90);
-
-            }
-            else{
-                spriteBatch.draw(currentFrame, x, y, (float) currentFrame.getRegionWidth() / currentFrame.getRegionWidth(), (float) currentFrame.getRegionHeight() / currentFrame.getRegionHeight(), (float) currentFrame.getRegionWidth() / currentFrame.getRegionWidth() * 2.0f, (float) currentFrame.getRegionHeight() / currentFrame.getRegionHeight() * 2.0f, flipX ? -1 : 1, flipY ? -1 : 1, angle - 90);
-
-            }
-            spriteBatch.setColor(Color.WHITE);
-        }
-    }
 
     public static class EnemyCollisionFilter implements CollisionFilter {
         @Override
         public Response filter(Item item, Item other) {
-            if (other.userData instanceof  Enemy || other.userData instanceof BasicBlock) return Response.slide;
-            else if(other.userData instanceof  Player) return Response.bounce;
+            if (other.userData instanceof  Enemy || other.userData instanceof BasicBlock || other.userData instanceof DoorBlock) return Response.slide;
+            else if(other.userData instanceof  Player || other.userData instanceof MagicBolt) return Response.cross;
             else return null;
         }
     }
