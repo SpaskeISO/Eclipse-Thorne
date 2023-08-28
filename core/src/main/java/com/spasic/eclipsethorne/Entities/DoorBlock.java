@@ -1,10 +1,9 @@
 package com.spasic.eclipsethorne.Entities;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.dongbat.jbump.Item;
 
-import static com.spasic.eclipsethorne.GameSreen.entities;
-import static com.spasic.eclipsethorne.GameSreen.world;
+import static com.spasic.eclipsethorne.Screens.GameSreen.entities;
+import static com.spasic.eclipsethorne.Screens.GameSreen.world;
 
 public class DoorBlock extends Entity{
 

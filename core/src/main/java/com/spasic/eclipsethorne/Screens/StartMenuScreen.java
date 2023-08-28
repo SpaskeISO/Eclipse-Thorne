@@ -1,4 +1,4 @@
-package com.spasic.eclipsethorne;
+package com.spasic.eclipsethorne.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.spasic.eclipsethorne.EclipseThorne;
 import de.eskalon.commons.screen.ManagedScreen;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,7 +27,6 @@ public class StartMenuScreen extends ManagedScreen {
     private Viewport viewport;
     private ShapeRenderer shapeRenderer;
     private Stage stage;
-    private Skin skin;
     private Table UI;
 
     public StartMenuScreen(){
@@ -38,7 +38,6 @@ public class StartMenuScreen extends ManagedScreen {
         this.camera = new OrthographicCamera();
         this.viewport = new FillViewport(EclipseThorne.VIEWPORT_WIDTH, EclipseThorne.VIEWPORT_HEIGHT, camera);
         this.stage = new Stage(this.viewport);
-        this.skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
         this.shapeRenderer = new ShapeRenderer();
         Gdx.input.setInputProcessor(stage);
 
@@ -49,11 +48,6 @@ public class StartMenuScreen extends ManagedScreen {
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.circle(EclipseThorne.WORLD_WIDTH / 2.0f, EclipseThorne.WORLD_HEIGHT /2.0f, 15f);
-        shapeRenderer.end();
 
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 60f));
         stage.draw();
@@ -89,14 +83,14 @@ public class StartMenuScreen extends ManagedScreen {
     private void createUI(){
         UI = new Table();
         UI.setFillParent(true);
-        TextButton.TextButtonStyle style = skin.get(TextButton.TextButtonStyle.class);
+        TextButton.TextButtonStyle style = game.skin.get(TextButton.TextButtonStyle.class);
         BitmapFont font = style.font;
 
         font.getData().setScale(2.0f);
-        final Label GameLabel = new Label("Eclipse Throne", skin);
+        final Label GameLabel = new Label("Eclipse Throne", game.skin);
         GameLabel.setAlignment(Align.center);
-        final TextButton startButton = new TextButton("Start", skin);
-        final TextButton quitButton = new TextButton("Quit", skin);
+        final TextButton startButton = new TextButton("Start", game.skin);
+        final TextButton quitButton = new TextButton("Quit", game.skin);
         startButton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -113,7 +107,6 @@ public class StartMenuScreen extends ManagedScreen {
             }
         });
 
-        System.out.println(stage.getRoot().toString());
         UI.add(GameLabel).pad(10).size(Gdx.graphics.getWidth() * 0.1f, Gdx.graphics.getHeight() * 0.05f).row();
         UI.add(startButton).pad(10).size(Gdx.graphics.getWidth() * 0.1f, Gdx.graphics.getHeight() * 0.05f).row();
         UI.add(quitButton).pad(10).size(Gdx.graphics.getWidth() * 0.1f, Gdx.graphics.getHeight() * 0.05f).row();

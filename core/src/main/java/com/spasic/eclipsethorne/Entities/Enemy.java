@@ -8,7 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.dongbat.jbump.*;
 import com.spasic.eclipsethorne.Utils;
 
-import static com.spasic.eclipsethorne.GameSreen.*;
+import static com.spasic.eclipsethorne.Screens.GameSreen.*;
 
 public class Enemy extends Entity{
 
@@ -219,7 +219,7 @@ public class Enemy extends Entity{
         @Override
         public Response filter(Item item, Item other) {
             if (other.userData instanceof  Enemy || other.userData instanceof BasicBlock || other.userData instanceof DoorBlock) return Response.slide;
-            else if(other.userData instanceof  Player || other.userData instanceof MagicBolt) return Response.cross;
+            else if(other.userData instanceof  Player || other.userData instanceof MagicBolt || other.userData instanceof  Portal) return Response.cross;
             else return null;
         }
     }

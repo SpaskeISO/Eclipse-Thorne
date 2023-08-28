@@ -1,17 +1,10 @@
 package com.spasic.eclipsethorne;
 
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.spasic.eclipsethorne.Entities.BasicBlock;
-import com.spasic.eclipsethorne.Entities.DoorBlock;
 import com.spasic.eclipsethorne.Entities.Entity;
 
-import java.util.ArrayList;
-
-import static com.spasic.eclipsethorne.GameSreen.camera;
-import static com.spasic.eclipsethorne.GameSreen.player;
+import static com.spasic.eclipsethorne.Screens.GameSreen.camera;
 
 public class Utils {
     public static float approach(float start, float target, float increment) {
@@ -37,13 +30,13 @@ public class Utils {
         return (start + Math.signum(delta) * MathUtils.clamp(increment, 0.0f, Math.abs(delta)) + 360) % 360;
     }
 
-    static boolean isValidPos(int i, int j, int n, int m)
+    public static boolean isValidPos(int i, int j, int n, int m)
     {
         return i >= 0 && j >= 0 && i <= n - 1 && j <= m - 1;
     }
 
 
-    static public boolean isEntityVisible(Entity entity) {
+    public static boolean isEntityVisible(Entity entity) {
         // Calculate the bounding rectangle of the entity
         float entityX = entity.getX(); // Adjust with your entity's position
         float entityY = entity.getY(); // Adjust with your entity's position
@@ -57,7 +50,7 @@ public class Utils {
             camera.frustum.pointInFrustum(entityX + entityWidth, entityY + entityHeight, 0);
     }
 
-    static public boolean isTileVisible(Vector3 bound){
+    public static boolean isTileVisible(Vector3 bound){
         float halfWorldWidth = EclipseThorne.WORLD_WIDTH / 2;
         float halfWorldHeight = EclipseThorne.WORLD_HEIGHT / 2;
 

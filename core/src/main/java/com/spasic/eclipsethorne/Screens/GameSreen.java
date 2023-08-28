@@ -1,4 +1,4 @@
-package com.spasic.eclipsethorne;
+package com.spasic.eclipsethorne.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -13,6 +13,7 @@ import com.dongbat.jbump.Rect;
 import com.dongbat.jbump.World;
 import com.github.czyzby.noise4j.map.Grid;
 import com.github.czyzby.noise4j.map.generator.room.dungeon.DungeonGenerator;
+import com.spasic.eclipsethorne.EclipseThorne;
 import com.spasic.eclipsethorne.Entities.*;
 import de.eskalon.commons.screen.ManagedScreen;
 import lombok.Getter;
@@ -31,6 +32,7 @@ public class GameSreen extends ManagedScreen {
     public SpriteBatch spriteBatch;
     public static TextureAtlas textureAtlas;
     public static ShapeDrawer shapeDrawer;
+    public static boolean nextLevel = false;
 
     // Camera
     public static ExtendViewport viewport;
@@ -45,6 +47,7 @@ public class GameSreen extends ManagedScreen {
     public static World<Entity> world;
     public static final Vector2 vector2 = new Vector2();
     public static Player player;
+    public static Portal portal;
 
     private Stage stage;
 
@@ -91,53 +94,28 @@ public class GameSreen extends ManagedScreen {
         world = new World<>();
         shapeDrawer = new ShapeDrawer(spriteBatch, textureAtlas.findRegion("white"));
 
-        grid = new Grid(128); // This algorithm likes odd-sized maps, although it works either way.
-
-        dungeonGenerator = new DungeonGenerator();
-        dungeonGenerator.setRoomGenerationAttempts(500);
-        //dungeonGenerator.setMaxRoomSize(75);
-        dungeonGenerator.setMaxRoomSize(45);
-        dungeonGenerator.setTolerance(10); // Max difference between width and height.
-        dungeonGenerator.setMinRoomSize(9);
-        dungeonGenerator.generate(grid);
-
-        generateMap();
-        getTileBounds();
-        //getSpawnPoints();
-        getEnemySpawnPoints();
-
-        // Spawn Player
-        setPlayerSpawnPoint();
-        player = new Player(playerSpawnPoint.x + EclipseThorne.WORLD_WIDTH / 2, playerSpawnPoint.y + EclipseThorne.WORLD_HEIGHT / 2);
-
-        camera.position.set(player.x , player.y, 0);
-
-
-
-        stage = new Stage(viewport);
-        Gdx.input.setInputProcessor(stage);
-
-
-
-        // For camera panning
-        targetPosition = new Vector3(player.x, player.y, 0); // Set your player's initial position here
-        followSpeed = 10.0f; // Adjust this value to control the camera's follow speed
-
-
-
-
-
-        spawnEnemies();
-
-
-
-
         tiles[0] = textureAtlas.findRegion("tile-1");
         tiles[1] = textureAtlas.findRegion("tile-2");
         tiles[2] = textureAtlas.findRegion("tile-3");
 
+        stage = new Stage(viewport);
+        Gdx.input.setInputProcessor(stage);
 
         spriteBatch.setProjectionMatrix(camera.combined);
+
+        grid = new Grid(128); // This algorithm likes odd-sized maps, although it works either way.
+        dungeonGenerator = new DungeonGenerator();
+        dungeonGenerator.setRoomGenerationAttempts(500);
+        dungeonGenerator.setMaxRoomSize(35);
+        dungeonGenerator.setTolerance(10); // Max difference between width and height.
+        dungeonGenerator.setMinRoomSize(9);
+
+
+        firstLevelSetup();
+
+        // For camera panning
+        targetPosition = new Vector3(player.x, player.y, 0); // Set your player's initial position here
+        followSpeed = 10.0f; // Adjust this value to control the camera's follow speed
 
 
     }
@@ -152,27 +130,31 @@ public class GameSreen extends ManagedScreen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        input();
+        if(nextLevel){
+            levelSetup();
+        }else{
+            input();
 
-        moveCamera(delta);
+            moveCamera(delta);
 
 
-        spriteBatch.setProjectionMatrix(camera.combined);
-        spriteBatch.begin();
+            spriteBatch.setProjectionMatrix(camera.combined);
+            spriteBatch.begin();
 
-        drawTiles();
+            drawTiles();
 
-        //createEnemies(delta);
+            entityLogic(delta);
 
-        entityLogic(delta);
+            drawEntities();
 
-        drawEntities();
-
-        if(debug){
-            drawDebug();
+            if(debug){
+                drawDebug();
+            }
+            spriteBatch.setColor(Color.WHITE);
+            spriteBatch.end();
         }
-        spriteBatch.setColor(Color.WHITE);
-        spriteBatch.end();
+
+
 
     }
 
@@ -308,7 +290,7 @@ public class GameSreen extends ManagedScreen {
         }
     }
 
-    public void getTileBounds(){
+    private void getTileBounds(){
         int width = grid.getWidth();
         int height = grid.getHeight();
 
@@ -330,21 +312,7 @@ public class GameSreen extends ManagedScreen {
         }
     }
 
-    public void getSpawnPoints(){
-        System.out.println(roomTiles.size() / 400);
-        int noEnemySpawnPoints = roomTiles.size() / 200;
-        while (enemySpawnPoints.size() < noEnemySpawnPoints){
-            for(int i = 0; i < roomTiles.size(); i++){
-                if(1 >= MathUtils.random(0, 100)){
-                    enemySpawnPoints.add((roomTiles.get(i)));
-                }
-                if(enemySpawnPoints.size() > noEnemySpawnPoints) break;
-            }
-        }
-
-    }
-
-    public void getEnemySpawnPoints(){
+    private void getEnemySpawnPoints(){
         int width = grid.getWidth();
         int height = grid.getHeight();
 
@@ -352,7 +320,7 @@ public class GameSreen extends ManagedScreen {
         for(int i = 0; i < width; i++){
             for(int j = 0; j < height; j++){
                 tempCell = 1f - grid.get(i, j);
-                if (tempCell == 0.5f && isValidEnemySpawnPoint(i, j) && 0.025f >= MathUtils.random(1.0f)) {
+                if (tempCell == 0.5f && isValidEnemySpawnPoint(i, j) && 0.02f >= MathUtils.random(1.0f)) {
                     enemySpawnPoints.add(new Vector2(i, j));
                 }
             }
@@ -371,6 +339,16 @@ public class GameSreen extends ManagedScreen {
         playerSpawnPoint = new Vector2(playerSpawnPoints.get(index).x, playerSpawnPoints.get(index).y);
     }
 
+    private void spawnPortal(){
+        portal = new Portal(portalSpawnPoint.x, portalSpawnPoint.y);
+    }
+
+    private void setPortalSpawnPoint(){
+        int index = MathUtils.random(enemySpawnPoints.size() - 1);
+        portalSpawnPoint = new Vector2(enemySpawnPoints.get(index).x, enemySpawnPoints.get(index).y);
+    }
+
+
     public boolean isValidEnemySpawnPoint(int i, int j){
         int width = grid.getWidth();
         int height = grid.getHeight();
@@ -384,6 +362,65 @@ public class GameSreen extends ManagedScreen {
         }
 
         return true;
+    }
+
+    public void firstLevelSetup(){
+        entities.clear();
+        world.reset();
+        bounds.clear();
+
+
+        // Spawn Points
+        roomTiles.clear();
+        enemySpawnPoints.clear();
+        playerSpawnPoints.clear();
+
+
+        dungeonGenerator.generate(grid);
+        generateMap();
+        getTileBounds();
+        getEnemySpawnPoints();
+
+        // Spawn Player
+        setPlayerSpawnPoint();
+        player = new Player(playerSpawnPoint.x + EclipseThorne.WORLD_WIDTH / 2, playerSpawnPoint.y + EclipseThorne.WORLD_HEIGHT / 2);
+
+        camera.position.set(player.x , player.y, 0);
+
+        setPortalSpawnPoint();
+        spawnPortal();
+
+        spawnEnemies();
+    }
+
+    public void levelSetup(){
+        nextLevel = false;
+
+        entities.clear();
+        world.reset();
+        bounds.clear();
+
+        // Spawn Points
+        roomTiles.clear();
+        enemySpawnPoints.clear();
+        playerSpawnPoints.clear();
+
+        dungeonGenerator.generate(grid);
+        generateMap();
+        getTileBounds();
+        getEnemySpawnPoints();
+
+        // Spawn Player
+        setPlayerSpawnPoint();
+        player = new Player(playerSpawnPoint.x + EclipseThorne.WORLD_WIDTH / 2, playerSpawnPoint.y + EclipseThorne.WORLD_HEIGHT / 2);
+        camera.position.set(player.x , player.y, 0);
+
+
+        setPortalSpawnPoint();
+        spawnPortal();
+
+        spawnEnemies();
+
     }
 
 }

@@ -8,7 +8,7 @@ import com.dongbat.jbump.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import static com.spasic.eclipsethorne.GameSreen.*;
+import static com.spasic.eclipsethorne.Screens.GameSreen.*;
 
 @Getter
 @Setter

@@ -4,15 +4,15 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.*;
 import com.dongbat.jbump.*;
-import com.spasic.eclipsethorne.EclipseThorne;
-import com.spasic.eclipsethorne.GameSreen;
+import com.spasic.eclipsethorne.Screens.GameSreen;
 import lombok.Getter;
 import lombok.Setter;
 
-import static com.spasic.eclipsethorne.GameSreen.*;
+import static com.spasic.eclipsethorne.Screens.GameSreen.*;
 
 
 @Getter
@@ -31,12 +31,14 @@ public class Player extends Entity{
     public boolean isDead = false;
     public float castTimer;
     public float invulnerabilityTimer;
+    public int maxHP;
 
 
     public Player(float x, float y){
         this.movementSpeed = 7.5f;
         castTimer = CAST_DELAY;
-        HP = 100;
+        maxHP = 100;
+        HP = maxHP;
 
         TextureRegion temp = idleAnimation.getKeyFrame(0, true);
         this.x = x;
@@ -160,6 +162,9 @@ public class Player extends Entity{
 
 
                 }
+                else if(collision.other.userData instanceof Portal){
+                    nextLevel = true;
+                }
             }
 
             //update position based on collisions
@@ -195,6 +200,21 @@ public class Player extends Entity{
 
     }
 
+    @Override
+    public void draw(SpriteBatch spriteBatch) {
+        super.draw(spriteBatch);
+        // Draw the background of the health bar
+        shapeDrawer.setColor(Color.GRAY);
+        shapeDrawer.filledRectangle(player.x, player.y - 0.25f, 1, 0.1f);
+        // Calculate the width of the health bar based on the current health value
+        float healthBarWidth = (float) HP / maxHP;
+
+        // Draw the actual health bar
+        shapeDrawer.setColor(Color.RED);
+        shapeDrawer.filledRectangle(player.x, player.y - 0.25f, healthBarWidth, 0.1f);
+
+    }
+
     public void die() {
         isDead = true;
         animation = dyingAnimation;
@@ -204,8 +224,8 @@ public class Player extends Entity{
     public static class PlayerCollisionFilter implements CollisionFilter {
         @Override
         public Response filter(Item item, Item other) {
-            if (other.userData instanceof Enemy || other.userData instanceof DoorBlock) return Response.cross;
-            else if(other.userData instanceof BasicBlock) return Response.slide;
+            if (other.userData instanceof Enemy || other.userData instanceof DoorBlock || other.userData instanceof Portal) return Response.cross;
+            else if(other.userData instanceof BasicBlock) return Response.cross;
             else return null;
         }
     }
