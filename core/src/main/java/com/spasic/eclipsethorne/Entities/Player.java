@@ -33,14 +33,14 @@ public class Player extends Entity{
     public float invulnerabilityTimer;
 
 
-    public Player(){
+    public Player(float x, float y){
         this.movementSpeed = 7.5f;
         castTimer = CAST_DELAY;
         HP = 100;
 
         TextureRegion temp = idleAnimation.getKeyFrame(0, true);
-        x = EclipseThorne.WORLD_WIDTH / 2.0f;
-        y = EclipseThorne.WORLD_HEIGHT / 2.0f;
+        this.x = x;
+        this.y = y;
         bboxX = (((float) temp.getRegionWidth() / temp.getRegionWidth() - (float) temp.getRegionWidth() / temp.getRegionWidth() / 2.0f * 1.5f)) / 2.0f;
         bboxY = (((float) temp.getRegionHeight() / temp.getRegionHeight() - (float) temp.getRegionHeight() / temp.getRegionHeight() / 2 * 1.5f)) / 2.0f;
         bboxWidth = (float) temp.getRegionWidth() / temp.getRegionWidth() / 2 * 1.5f;
@@ -204,8 +204,8 @@ public class Player extends Entity{
     public static class PlayerCollisionFilter implements CollisionFilter {
         @Override
         public Response filter(Item item, Item other) {
-            if (other.userData instanceof Enemy) return Response.cross;
-            else if(other.userData instanceof BasicBlock) return Response.cross;
+            if (other.userData instanceof Enemy || other.userData instanceof DoorBlock) return Response.cross;
+            else if(other.userData instanceof BasicBlock) return Response.slide;
             else return null;
         }
     }

@@ -18,10 +18,9 @@ import de.eskalon.commons.screen.ManagedScreen;
 import lombok.Getter;
 import lombok.Setter;
 import space.earlygrey.shapedrawer.ShapeDrawer;
-
 import java.util.ArrayList;
 
-import static com.spasic.eclipsethorne.Utils.isValidPos;
+import static com.spasic.eclipsethorne.Utils.*;
 
 @Getter
 @Setter
@@ -57,7 +56,7 @@ public class GameSreen extends ManagedScreen {
     private Vector3 targetPosition;
     private float followSpeed;
 
-    //Map
+    // Map
     private Grid grid;
     private DungeonGenerator dungeonGenerator;
     public static int[][] neighbors = {
@@ -65,10 +64,15 @@ public class GameSreen extends ManagedScreen {
         { 0, -1 },             { 0, 1 },
         { 1, -1 }, { 1, 0 },  { 1, 1 }
     };
-    private ArrayList<Rectangle> bounds = new ArrayList<>();
+    private ArrayList<Vector3> bounds = new ArrayList<>();
     private TextureRegion[] tiles = new TextureRegion[3];
-    private Texture tileTexture = new Texture(Gdx.files.internal("tile-1.png"));
-    private Sprite tileSprite = new Sprite(tileTexture);
+
+    // Spawn Points
+    private ArrayList<Vector2> roomTiles = new ArrayList<>();
+    private ArrayList<Vector2> enemySpawnPoints = new ArrayList<>();
+    private ArrayList<Vector2> playerSpawnPoints = new ArrayList<>();
+    private Vector2 playerSpawnPoint;
+    private Vector2 portalSpawnPoint;
 
 
     public GameSreen(){
@@ -83,42 +87,60 @@ public class GameSreen extends ManagedScreen {
         viewport = new ExtendViewport(EclipseThorne.WORLD_WIDTH / 100, EclipseThorne.WORLD_HEIGHT / 100, camera);
         viewport.apply();
 
-
-
-
         entities = new SnapshotArray<>();
         world = new World<>();
         shapeDrawer = new ShapeDrawer(spriteBatch, textureAtlas.findRegion("white"));
-
-        stage = new Stage(viewport);
-        Gdx.input.setInputProcessor(stage);
-
-        player = new Player();
-
-        camera.position.set(player.x, player.y, 0);
-        //camera.zoom = 0.5f;
-
-        targetPosition = new Vector3(player.x, player.y, 0); // Set your player's initial position here
-        followSpeed = 10.0f; // Adjust this value to control the camera's follow speed
-
-        Animation<TextureRegion> animation = new Animation<TextureRegion>(0.033f, textureAtlas.findRegions("player-move"), Animation.PlayMode.LOOP);
 
         grid = new Grid(128); // This algorithm likes odd-sized maps, although it works either way.
 
         dungeonGenerator = new DungeonGenerator();
         dungeonGenerator.setRoomGenerationAttempts(500);
-        dungeonGenerator.setMaxRoomSize(75);
+        //dungeonGenerator.setMaxRoomSize(75);
+        dungeonGenerator.setMaxRoomSize(45);
         dungeonGenerator.setTolerance(10); // Max difference between width and height.
         dungeonGenerator.setMinRoomSize(9);
         dungeonGenerator.generate(grid);
 
         generateMap();
-        tileSprite.setBounds(0, 0, 1, 1);
+        getTileBounds();
+        //getSpawnPoints();
+        getEnemySpawnPoints();
+
+        // Spawn Player
+        setPlayerSpawnPoint();
+        player = new Player(playerSpawnPoint.x + EclipseThorne.WORLD_WIDTH / 2, playerSpawnPoint.y + EclipseThorne.WORLD_HEIGHT / 2);
+
+        camera.position.set(player.x , player.y, 0);
+
+
+
+        stage = new Stage(viewport);
+        Gdx.input.setInputProcessor(stage);
+
+
+
+        // For camera panning
+        targetPosition = new Vector3(player.x, player.y, 0); // Set your player's initial position here
+        followSpeed = 10.0f; // Adjust this value to control the camera's follow speed
+
+
+
+
+
+        spawnEnemies();
+
+
+
+
+        tiles[0] = textureAtlas.findRegion("tile-1");
+        tiles[1] = textureAtlas.findRegion("tile-2");
+        tiles[2] = textureAtlas.findRegion("tile-3");
+
+
         spriteBatch.setProjectionMatrix(camera.combined);
 
-        getTileBounds();
-    }
 
+    }
 
     @Override
     public void hide() {
@@ -212,11 +234,9 @@ public class GameSreen extends ManagedScreen {
 
     public void drawEntities(){
         //draw all entities
-        int i = 0;
         for (Entity entity : entities) {
             if (isEntityVisible(entity)) {
                 entity.draw(spriteBatch);
-                System.out.println(++i);
             }
         }
     }
@@ -234,36 +254,7 @@ public class GameSreen extends ManagedScreen {
         }
     }
 
-    private boolean isEntityVisible(Entity entity) {
-        // Calculate the bounding rectangle of the entity
-        float entityX = entity.getX(); // Adjust with your entity's position
-        float entityY = entity.getY(); // Adjust with your entity's position
-        float entityWidth = entity.bboxWidth; // Adjust with your entity's width
-        float entityHeight = entity.bboxHeight; // Adjust with your entity's height
 
-        // Check if the bounding rectangle is within the camera's frustum
-        return camera.frustum.pointInFrustum(entityX, entityY, 0) ||
-            camera.frustum.pointInFrustum(entityX + entityWidth, entityY, 0) ||
-            camera.frustum.pointInFrustum(entityX, entityY + entityHeight, 0) ||
-            camera.frustum.pointInFrustum(entityX + entityWidth, entityY + entityHeight, 0);
-    }
-
-    private boolean isTileVisible(Rectangle bound){
-        float halfWorldWidth = EclipseThorne.WORLD_WIDTH / 2;
-        float halfWorldHeight = EclipseThorne.WORLD_HEIGHT / 2;
-
-        // Calculate the bounding rectangle of the entity
-        float rectangleX = bound.x + halfWorldWidth; // Adjust with your entity's position
-        float rectangleY = bound.y + halfWorldHeight; // Adjust with your entity's position
-        float rectangleWidth = bound.width; // Adjust with your entity's width
-        float rectangleHeight = bound.height; // Adjust with your entity's height
-
-        // Check if the bounding rectangle is within the camera's frustum
-        return camera.frustum.pointInFrustum(rectangleX, rectangleY, 0) ||
-            camera.frustum.pointInFrustum(rectangleX + rectangleWidth, rectangleY, 0) ||
-            camera.frustum.pointInFrustum(rectangleX, rectangleY + rectangleHeight, 0) ||
-            camera.frustum.pointInFrustum(rectangleX + rectangleWidth, rectangleY + rectangleHeight, 0);
-    }
 
 
 
@@ -304,18 +295,15 @@ public class GameSreen extends ManagedScreen {
             }
         }
 
-
-
     }
 
     public void drawTiles() {
         float halfWorldWidth = EclipseThorne.WORLD_WIDTH / 2;
         float halfWorldHeight = EclipseThorne.WORLD_HEIGHT / 2;
 
-        for (Rectangle bound : bounds) {
+        for (Vector3 bound : bounds) {
             if(isTileVisible(bound)){
-                tileSprite.setBounds(halfWorldWidth + bound.x, halfWorldHeight + bound.y, 1, 1);
-                tileSprite.draw(spriteBatch);
+                spriteBatch.draw(tiles[(int) bound.z], halfWorldWidth + bound.x, halfWorldHeight + bound.y, 1, 1);
             }
         }
     }
@@ -329,11 +317,73 @@ public class GameSreen extends ManagedScreen {
             for (int j = 0; j < height; j++) {
                 tempCell = 1f - grid.get(i, j);
                 if (tempCell  == 1 || tempCell == 0.5f) {
-                    bounds.add(new Rectangle(i, j, 1, 1));
+                    bounds.add(new Vector3(i, j, MathUtils.random(0, 2)));
+                    if(tempCell == 0.5){
+                        roomTiles.add(new Vector2(i, j));
+                    }
+                    else {
+                        playerSpawnPoints.add(new Vector2(i, j));
+                    }
                 }
 
             }
         }
+    }
+
+    public void getSpawnPoints(){
+        System.out.println(roomTiles.size() / 400);
+        int noEnemySpawnPoints = roomTiles.size() / 200;
+        while (enemySpawnPoints.size() < noEnemySpawnPoints){
+            for(int i = 0; i < roomTiles.size(); i++){
+                if(1 >= MathUtils.random(0, 100)){
+                    enemySpawnPoints.add((roomTiles.get(i)));
+                }
+                if(enemySpawnPoints.size() > noEnemySpawnPoints) break;
+            }
+        }
+
+    }
+
+    public void getEnemySpawnPoints(){
+        int width = grid.getWidth();
+        int height = grid.getHeight();
+
+        float tempCell = 0;
+        for(int i = 0; i < width; i++){
+            for(int j = 0; j < height; j++){
+                tempCell = 1f - grid.get(i, j);
+                if (tempCell == 0.5f && isValidEnemySpawnPoint(i, j) && 0.025f >= MathUtils.random(1.0f)) {
+                    enemySpawnPoints.add(new Vector2(i, j));
+                }
+            }
+        }
+    }
+
+    private void spawnEnemies(){
+        for (Vector2 enemySpawnPoint : enemySpawnPoints) {
+            new Enemy(EnemyType.values()[MathUtils.random(0, 8)], EclipseThorne.WORLD_WIDTH / 2 + enemySpawnPoint.x,
+                                                                EclipseThorne.WORLD_WIDTH / 2 + enemySpawnPoint.y);
+        }
+    }
+
+    private void setPlayerSpawnPoint(){
+        int index = MathUtils.random(playerSpawnPoints.size() - 1);
+        playerSpawnPoint = new Vector2(playerSpawnPoints.get(index).x, playerSpawnPoints.get(index).y);
+    }
+
+    public boolean isValidEnemySpawnPoint(int i, int j){
+        int width = grid.getWidth();
+        int height = grid.getHeight();
+
+        for(int[] offset : neighbors){
+            int newCol = i + offset[0];
+            int newRow = j + offset[1];
+            if(isValidPos(newCol, newRow, width, height) && 1f - grid.get(newCol, newRow) != 0.5f){
+                return false;
+            }
+        }
+
+        return true;
     }
 
 }

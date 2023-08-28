@@ -78,7 +78,7 @@ public class Enemy extends Entity{
         bboxX = 0f;
         bboxY = 0f;
         this.movementSpeed = 5;
-        this.boss = 0.1 >= MathUtils.random(1.0f);
+        this.boss = 0.05f >= MathUtils.random(1.0f);
         if(boss){
             color = Color.RED;
             SCALE = 2.0f;
