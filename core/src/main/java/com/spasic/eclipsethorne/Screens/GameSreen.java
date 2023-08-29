@@ -110,6 +110,7 @@ public class GameSreen extends ManagedScreen {
         dungeonGenerator.setTolerance(10); // Max difference between width and height.
         dungeonGenerator.setMinRoomSize(9);
 
+        camera.zoom = 4.0f;
 
         firstLevelSetup();
 
@@ -132,7 +133,8 @@ public class GameSreen extends ManagedScreen {
 
         if(nextLevel){
             levelSetup();
-        }else{
+        }
+        else{
             input();
 
             moveCamera(delta);
@@ -153,6 +155,7 @@ public class GameSreen extends ManagedScreen {
             spriteBatch.setColor(Color.WHITE);
             spriteBatch.end();
         }
+
 
 
 
@@ -395,7 +398,8 @@ public class GameSreen extends ManagedScreen {
 
     public void levelSetup(){
         nextLevel = false;
-
+        LoadingScreen.loading = true;
+        game.getScreenManager().pushScreen("LoadingScreen", "verticalSlicingTransition");
         entities.clear();
         world.reset();
         bounds.clear();
@@ -420,7 +424,6 @@ public class GameSreen extends ManagedScreen {
         spawnPortal();
 
         spawnEnemies();
-
     }
 
 }

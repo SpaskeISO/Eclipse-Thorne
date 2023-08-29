@@ -12,6 +12,7 @@ import de.eskalon.commons.screen.transition.ScreenTransition;
 import de.eskalon.commons.screen.transition.impl.BlendingTransition;
 import de.eskalon.commons.screen.transition.impl.PushTransition;
 import de.eskalon.commons.screen.transition.impl.SlidingDirection;
+import de.eskalon.commons.screen.transition.impl.VerticalSlicingTransition;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class EclipseThorne extends ManagedGame<ManagedScreen, ScreenTransition> {
@@ -38,11 +39,13 @@ public class EclipseThorne extends ManagedGame<ManagedScreen, ScreenTransition> 
         this.screenManager.addScreen("GameScreen", new GameSreen());
         this.screenManager.addScreen("LoadingScreen", new LoadingScreen());
 
-        PushTransition pushTransition = new PushTransition(spriteBatch, SlidingDirection.RIGHT, 2.0f);
+        PushTransition pushTransition = new PushTransition(spriteBatch, SlidingDirection.RIGHT, 1.0f);
+        VerticalSlicingTransition verticalSlicingTransition = new VerticalSlicingTransition(spriteBatch, 8, 1F);
         BlendingTransition blendingTransition = new BlendingTransition(spriteBatch, 1f);
 
         screenManager.addScreenTransition("pushTransition", pushTransition);
         screenManager.addScreenTransition("blendingTransition", blendingTransition);
+        screenManager.addScreenTransition("verticalSlicingTransition", verticalSlicingTransition);
 
         this.screenManager.pushScreen("StartMenu", "blendingTransition");
 

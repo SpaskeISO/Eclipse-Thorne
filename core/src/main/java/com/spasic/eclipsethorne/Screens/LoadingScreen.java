@@ -23,6 +23,11 @@ public class LoadingScreen extends ManagedScreen {
     private Table UI;
     private static Skin skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
     public static ProgressBar loadingProgressBar = new ProgressBar(0.0f, 100.0f, 1.0f, false, skin);
+    public static boolean loading = false;
+    public static boolean transitioning = false;
+    public static float LOADING_TIME = 2.5f;
+    public float timePassed = 0.0f;
+    public float transitioningTime = 0;
 
     public LoadingScreen(){
         this.game = (EclipseThorne) Gdx.app.getApplicationListener();
@@ -48,6 +53,18 @@ public class LoadingScreen extends ManagedScreen {
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        if(loading){
+            updateProgressBar(delta);
+        }
+        if(transitioning){
+            transitioningTime += delta;
+            if(transitioningTime == 1.0f){
+                loadingProgressBar.setValue(loadingProgressBar.getMinValue());
+                transitioning = false;
+                transitioningTime = 0;
+            }
+        }
 
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 60f));
         stage.draw();
@@ -81,5 +98,17 @@ public class LoadingScreen extends ManagedScreen {
         UI.add(loadingProgressBar).pad(10).size(Gdx.graphics.getWidth() * 0.1f, Gdx.graphics.getHeight() * 0.05f).row();
 
         stage.addActor(UI);
+    }
+
+    public void updateProgressBar(float delta){
+        timePassed += delta;
+        System.out.println((timePassed / LOADING_TIME) * 100);
+        loadingProgressBar.setValue((timePassed / LOADING_TIME) * 100);
+        if(loadingProgressBar.getMaxValue() == loadingProgressBar.getValue()){
+            loading = false;
+            timePassed = 0;
+            game.getScreenManager().pushScreen("GameScreen", "verticalSlicingTransition");
+            transitioning = true;
+        }
     }
 }
