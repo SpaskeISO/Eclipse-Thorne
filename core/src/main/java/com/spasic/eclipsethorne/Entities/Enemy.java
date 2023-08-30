@@ -195,6 +195,7 @@ public class Enemy extends Entity{
         if (deathTimer > 0) {
             deathTimer -= delta;
             if (deathTimer <= 0) {
+                new XP(this.x, this.y, this.SCALE);
                 entities.removeValue(this, true);
                 world.remove(item);
             }

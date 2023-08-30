@@ -1,13 +1,31 @@
 package com.spasic.eclipsethorne.Screens;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.SnapshotArray;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.dongbat.jbump.Item;
 import com.dongbat.jbump.Rect;
 import com.dongbat.jbump.World;
@@ -19,6 +37,7 @@ import de.eskalon.commons.screen.ManagedScreen;
 import lombok.Getter;
 import lombok.Setter;
 import space.earlygrey.shapedrawer.ShapeDrawer;
+
 import java.util.ArrayList;
 
 import static com.spasic.eclipsethorne.Utils.*;
@@ -30,18 +49,26 @@ public class GameSreen extends ManagedScreen {
     private EclipseThorne game;
 
     public SpriteBatch spriteBatch;
+    public SpriteBatch spriteBatchUI;
     public static TextureAtlas textureAtlas;
     public static ShapeDrawer shapeDrawer;
+    public static ShapeDrawer shapeDrawerUI;
     public static boolean nextLevel = false;
 
     // Camera
     public static ExtendViewport viewport;
     public static OrthographicCamera camera;
+
+    public static ScreenViewport viewportUI;
+    public static OrthographicCamera cameraUI;
+
     public float aspectRatio = (float) Gdx.graphics.getHeight() / (float) Gdx.graphics.getWidth();
     Interpolation interpolation = Interpolation.smooth;
     Vector3 interpolatedPosition = new Vector3();
 
     public boolean debug = false;
+    public boolean paused = false;
+    public boolean gameOver = false;
 
     public static SnapshotArray<Entity> entities;
     public static World<Entity> world;
@@ -77,28 +104,43 @@ public class GameSreen extends ManagedScreen {
     private Vector2 playerSpawnPoint;
     private Vector2 portalSpawnPoint;
 
+    // Scene2D UI
+    public Group PauseGroup;
+    public Group GameOverGroup;
+    public Group UpgradesGroup;
+    public Table PauseUI;
+    public Table GameOverUI;
+    public Table UpgradesUI;
+
 
     public GameSreen(){
         this.game = (EclipseThorne) Gdx.app.getApplicationListener();
+
+
     }
 
     @Override
     protected void create() {
         spriteBatch = new SpriteBatch();
+        spriteBatchUI = new SpriteBatch();
         textureAtlas = new TextureAtlas("textures.atlas");
         camera = new OrthographicCamera();
         viewport = new ExtendViewport(EclipseThorne.WORLD_WIDTH / 100, EclipseThorne.WORLD_HEIGHT / 100, camera);
         viewport.apply();
 
+        cameraUI = new OrthographicCamera();
+        viewportUI = new ScreenViewport(cameraUI);
+
         entities = new SnapshotArray<>();
         world = new World<>();
         shapeDrawer = new ShapeDrawer(spriteBatch, textureAtlas.findRegion("white"));
+        shapeDrawerUI = new ShapeDrawer(spriteBatchUI, textureAtlas.findRegion("white"));
 
         tiles[0] = textureAtlas.findRegion("tile-1");
         tiles[1] = textureAtlas.findRegion("tile-2");
         tiles[2] = textureAtlas.findRegion("tile-3");
 
-        stage = new Stage(viewport);
+        stage = new Stage(viewportUI);
         Gdx.input.setInputProcessor(stage);
 
         spriteBatch.setProjectionMatrix(camera.combined);
@@ -110,15 +152,16 @@ public class GameSreen extends ManagedScreen {
         dungeonGenerator.setTolerance(10); // Max difference between width and height.
         dungeonGenerator.setMinRoomSize(9);
 
-        camera.zoom = 4.0f;
-
+        //camera.zoom = 4.0f;
         firstLevelSetup();
 
         // For camera panning
         targetPosition = new Vector3(player.x, player.y, 0); // Set your player's initial position here
         followSpeed = 10.0f; // Adjust this value to control the camera's follow speed
 
+        CreateUI();
 
+        Gdx.input.setInputProcessor(stage);
     }
 
     @Override
@@ -127,25 +170,42 @@ public class GameSreen extends ManagedScreen {
     }
 
     @Override
+    public void show() {
+        super.show();
+    }
+
+    @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        if(Gdx.input.getInputProcessor() != stage) Gdx.input.setInputProcessor(stage);
+
+        viewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        viewportUI.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
+
+        camera.update();
+        cameraUI.update();
+
 
         if(nextLevel){
             levelSetup();
         }
         else{
+            spriteBatch.begin();
+
+            spriteBatch.setProjectionMatrix(camera.combined);
             input();
 
             moveCamera(delta);
 
 
-            spriteBatch.setProjectionMatrix(camera.combined);
-            spriteBatch.begin();
 
             drawTiles();
 
-            entityLogic(delta);
+            if(!paused && !gameOver){
+                entityLogic(delta);
+            }
+
 
             drawEntities();
 
@@ -154,6 +214,34 @@ public class GameSreen extends ManagedScreen {
             }
             spriteBatch.setColor(Color.WHITE);
             spriteBatch.end();
+
+            spriteBatchUI.begin();
+            spriteBatchUI.setProjectionMatrix(cameraUI.combined);
+            renderGameUI();
+
+
+            spriteBatchUI.end();
+
+            if(paused){
+                PauseGroup.setVisible(true);
+                viewportUI.apply();
+            }
+            else{
+                PauseGroup.setVisible(false);
+                viewport.apply();
+            }
+            if(gameOver){
+                GameOverGroup.setVisible(true);
+                viewportUI.apply();
+
+            }
+            else{
+                GameOverGroup.setVisible(false);
+
+            }
+
+            stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 60f));
+            stage.draw();
         }
 
 
@@ -163,6 +251,13 @@ public class GameSreen extends ManagedScreen {
 
     @Override
     public void resize(int width, int height) {
+        cameraUI.viewportWidth = width;
+        cameraUI.viewportHeight = height;
+        cameraUI.update();
+
+        PauseGroup.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        GameOverGroup.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        UpgradesGroup.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
     }
 
@@ -174,6 +269,9 @@ public class GameSreen extends ManagedScreen {
     public void input(){
         if (Gdx.input.isKeyJustPressed(Input.Keys.F5)) {
             debug = !debug;
+        }
+        if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
+            paused = !paused;
         }
     }
 
@@ -416,7 +514,7 @@ public class GameSreen extends ManagedScreen {
 
         // Spawn Player
         setPlayerSpawnPoint();
-        player = new Player(playerSpawnPoint.x + EclipseThorne.WORLD_WIDTH / 2, playerSpawnPoint.y + EclipseThorne.WORLD_HEIGHT / 2);
+        player = new Player(playerSpawnPoint.x + EclipseThorne.WORLD_WIDTH / 2, playerSpawnPoint.y + EclipseThorne.WORLD_HEIGHT / 2, player);
         camera.position.set(player.x , player.y, 0);
 
 
@@ -424,6 +522,114 @@ public class GameSreen extends ManagedScreen {
         spawnPortal();
 
         spawnEnemies();
+    }
+
+    public void CreateUI(){
+        CreatePauseUI();
+        CreateGameOverUI();
+    }
+
+    public void CreatePauseUI(){
+        PauseGroup = new Group();
+        PauseGroup.setVisible(false);
+        PauseUI = new Table(game.skin);
+        PauseUI.setFillParent(true);
+
+
+        TextButton.TextButtonStyle style = game.skin.get(TextButton.TextButtonStyle.class);
+        BitmapFont font = style.font;
+        font.getData().setScale(2.0f);
+
+        final Label pauseLabel = new Label("Game Paused", game.skin);
+        pauseLabel.setAlignment(Align.center);
+
+        final TextButton resumeButton = new TextButton("Resume", game.skin);
+        resumeButton.addListener( new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                paused = false;
+            }
+        });
+
+        final TextButton quitButton = new TextButton("Quit", game.skin);
+        quitButton.addListener( new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.getScreenManager().pushScreen("StartMenu", "blendingTransition");
+            }
+        });
+
+        PauseUI.add(pauseLabel).pad(10).size(Gdx.graphics.getWidth() * 0.1f, Gdx.graphics.getHeight() * 0.05f).row();
+        PauseUI.add(resumeButton).pad(10).size(Gdx.graphics.getWidth() * 0.1f, Gdx.graphics.getHeight() * 0.05f).row();
+        PauseUI.add(quitButton).pad(10).size(Gdx.graphics.getWidth() * 0.1f, Gdx.graphics.getHeight() * 0.05f).row();
+
+
+        PauseGroup.addActor(PauseUI);
+        PauseGroup.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        stage.addActor(PauseGroup);
+
+    }
+
+    public void CreateGameOverUI(){
+        GameOverGroup = new Group();
+        GameOverGroup.setVisible(false);
+        GameOverUI = new Table(game.skin);
+        GameOverUI.setFillParent(true);
+
+
+        TextButton.TextButtonStyle style = game.skin.get(TextButton.TextButtonStyle.class);
+        BitmapFont font = style.font;
+        font.getData().setScale(2.0f);
+
+        final Label gameOverLabel = new Label("GAME OVER", game.skin);
+        gameOverLabel.setAlignment(Align.center);
+        final TextButton playAgainButton = new TextButton("Play Again", game.skin);
+        playAgainButton.addListener( new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                gameOver = false;
+                firstLevelSetup();
+            }
+        });
+        final TextButton quitButton = new TextButton("QUIT", game.skin);
+        quitButton.addListener( new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.getScreenManager().pushScreen("StartMenu", "blendingTransition");
+            }
+        });
+
+        GameOverUI.add(gameOverLabel).pad(10).size(Gdx.graphics.getWidth() * 0.1f, Gdx.graphics.getHeight() * 0.05f).row();
+        GameOverUI.add(playAgainButton).pad(10).size(Gdx.graphics.getWidth() * 0.1f, Gdx.graphics.getHeight() * 0.05f).row();
+        GameOverUI.add(quitButton).pad(10).size(Gdx.graphics.getWidth() * 0.1f, Gdx.graphics.getHeight() * 0.05f).row();
+
+        GameOverGroup.addActor(GameOverUI);
+        GameOverGroup.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        stage.addActor(GameOverGroup);
+    }
+
+    public void CreateUpgradeUI(){
+        UpgradesGroup = new Group();
+        UpgradesGroup.setVisible(false);
+        UpgradesUI = new Table(game.skin);
+    }
+
+    public void renderGameUI(){
+        // XP Frame
+        shapeDrawerUI.setColor(Color.GOLDENROD);
+        shapeDrawerUI.filledRectangle(0, (Gdx.graphics.getHeight() / 40.0f) * 39.0f, Gdx.graphics.getWidth(),
+                                    Gdx.graphics.getHeight() / 40.0f);
+        // XP background
+        shapeDrawerUI.setColor(Color.GRAY);
+        shapeDrawerUI.filledRectangle(Gdx.graphics.getWidth() - (Gdx.graphics.getWidth() / 40.0f * 39.0f), ((Gdx.graphics.getHeight() / 40.0f) * 39.2f),
+                                    Gdx.graphics.getWidth() - (Gdx.graphics.getWidth() / 40.0f * 2.0f),
+                                    Gdx.graphics.getHeight() / 40.0f - Gdx.graphics.getHeight() / 40.0f * 0.4f);
+        shapeDrawerUI.setColor(Color.TEAL);
+
+        // Current XP
+        shapeDrawerUI.filledRectangle(Gdx.graphics.getWidth() - (Gdx.graphics.getWidth() / 40.0f * 39.0f), ((Gdx.graphics.getHeight() / 40.0f) * 39.2f),
+            (Gdx.graphics.getWidth() - (Gdx.graphics.getWidth() / 40.0f * 2.0f)) * ((float) player.currentXP / player.nextLevelXP),
+            Gdx.graphics.getHeight() / 40.0f - Gdx.graphics.getHeight() / 40.0f * 0.4f);
     }
 
 }

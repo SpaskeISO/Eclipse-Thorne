@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FillViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.spasic.eclipsethorne.EclipseThorne;
 import de.eskalon.commons.screen.ManagedScreen;
@@ -36,7 +37,7 @@ public class StartMenuScreen extends ManagedScreen {
     @Override
     protected void create() {
         this.camera = new OrthographicCamera();
-        this.viewport = new FillViewport(EclipseThorne.VIEWPORT_WIDTH, EclipseThorne.VIEWPORT_HEIGHT, camera);
+        this.viewport = new ScreenViewport(camera);
         this.stage = new Stage(this.viewport);
         this.shapeRenderer = new ShapeRenderer();
         Gdx.input.setInputProcessor(stage);
@@ -48,6 +49,7 @@ public class StartMenuScreen extends ManagedScreen {
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        if(Gdx.input.getInputProcessor() != stage) Gdx.input.setInputProcessor(stage);
 
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 60f));
         stage.draw();

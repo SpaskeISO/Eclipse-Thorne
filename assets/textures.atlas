@@ -4,6 +4,13 @@ size: 1024, 256
 format: RGBA8888
 filter: Nearest, Nearest
 repeat: none
+XP
+  rotate: false
+  xy: 426, 78
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
 bird_man
   rotate: false
   xy: 2, 36
@@ -258,7 +265,7 @@ player-move
   index: 1
 portal-1
   rotate: false
-  xy: 36, 2
+  xy: 460, 78
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
@@ -272,14 +279,14 @@ tile-1
   index: -1
 tile-2
   rotate: false
-  xy: 460, 78
+  xy: 494, 78
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 tile-3
   rotate: false
-  xy: 426, 78
+  xy: 36, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0

@@ -33,12 +33,40 @@ public class Player extends Entity{
     public float invulnerabilityTimer;
     public int maxHP;
 
+    public int currentXP = 0;
+    public int nextLevelXP = 10;
+
 
     public Player(float x, float y){
         this.movementSpeed = 7.5f;
         castTimer = CAST_DELAY;
         maxHP = 100;
         HP = maxHP;
+
+        TextureRegion temp = idleAnimation.getKeyFrame(0, true);
+        this.x = x;
+        this.y = y;
+        bboxX = (((float) temp.getRegionWidth() / temp.getRegionWidth() - (float) temp.getRegionWidth() / temp.getRegionWidth() / 2.0f * 1.5f)) / 2.0f;
+        bboxY = (((float) temp.getRegionHeight() / temp.getRegionHeight() - (float) temp.getRegionHeight() / temp.getRegionHeight() / 2 * 1.5f)) / 2.0f;
+        bboxWidth = (float) temp.getRegionWidth() / temp.getRegionWidth() / 2 * 1.5f;
+        bboxHeight = (float) temp.getRegionHeight() / temp.getRegionHeight() / 2 * 1.5f;
+
+
+
+        item = new Item<>(this);
+        entities.add(this);
+        world.add(item, x + bboxX, y + bboxY, bboxWidth, bboxHeight);
+
+        animationTime = 0;
+        animation = idleAnimation;
+    }
+
+    public Player(float x, float y, Player player){
+        this.movementSpeed = 7.5f;
+        castTimer = CAST_DELAY;
+        maxHP = 100;
+        HP = maxHP;
+        this.currentXP = player.currentXP;
 
         TextureRegion temp = idleAnimation.getKeyFrame(0, true);
         this.x = x;
@@ -162,9 +190,16 @@ public class Player extends Entity{
 
 
                 }
+                else if(collision.other.userData instanceof XP){
+                    XP xp = (XP) collision.other.userData;
+                    player.currentXP += xp.xpValue;
+                    xp.die();
+
+                }
                 else if(collision.other.userData instanceof Portal){
                     nextLevel = true;
                 }
+
             }
 
             //update position based on collisions
@@ -207,7 +242,9 @@ public class Player extends Entity{
         shapeDrawer.setColor(Color.GRAY);
         shapeDrawer.filledRectangle(player.x, player.y - 0.25f, 1, 0.1f);
         // Calculate the width of the health bar based on the current health value
-        float healthBarWidth = (float) HP / maxHP;
+        float healthBarWidth;
+        if(HP == 0) healthBarWidth = 0;
+        else healthBarWidth = (float) HP / maxHP;
 
         // Draw the actual health bar
         shapeDrawer.setColor(Color.RED);
@@ -221,11 +258,17 @@ public class Player extends Entity{
         animationTime = 0; // Reset animation time to start the dying animation
     }
 
+    public void setPosition(float x, float y){
+        this.x = x;
+        this.y = y;
+    }
+
     public static class PlayerCollisionFilter implements CollisionFilter {
         @Override
         public Response filter(Item item, Item other) {
-            if (other.userData instanceof Enemy || other.userData instanceof DoorBlock || other.userData instanceof Portal) return Response.cross;
-            else if(other.userData instanceof BasicBlock) return Response.cross;
+            if (other.userData instanceof Enemy || other.userData instanceof DoorBlock
+                || other.userData instanceof Portal || other.userData instanceof  XP) return Response.cross;
+            else if(other.userData instanceof BasicBlock) return Response.slide;
             else return null;
         }
     }
