@@ -96,6 +96,10 @@ public class StartMenuScreen extends ManagedScreen {
         startButton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                if(GameSreen.gameOver){
+                        GameSreen temp = (GameSreen) game.getScreenManager().getScreen("GameScreen");
+                        temp.reset();
+                }
                 game.getScreenManager().pushScreen("GameScreen", "blendingTransition");
             }
         });

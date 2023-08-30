@@ -1,6 +1,5 @@
 package com.spasic.eclipsethorne.Screens;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
@@ -54,6 +53,7 @@ public class GameSreen extends ManagedScreen {
     public static ShapeDrawer shapeDrawer;
     public static ShapeDrawer shapeDrawerUI;
     public static boolean nextLevel = false;
+    public static int Level = 1;
 
     // Camera
     public static ExtendViewport viewport;
@@ -66,9 +66,9 @@ public class GameSreen extends ManagedScreen {
     Interpolation interpolation = Interpolation.smooth;
     Vector3 interpolatedPosition = new Vector3();
 
-    public boolean debug = false;
-    public boolean paused = false;
-    public boolean gameOver = false;
+    public boolean debug;
+    public boolean paused;
+    public static boolean gameOver;
 
     public static SnapshotArray<Entity> entities;
     public static World<Entity> world;
@@ -111,6 +111,7 @@ public class GameSreen extends ManagedScreen {
     public Table PauseUI;
     public Table GameOverUI;
     public Table UpgradesUI;
+    public static boolean LEVEL_UP;
 
 
     public GameSreen(){
@@ -130,6 +131,12 @@ public class GameSreen extends ManagedScreen {
 
         cameraUI = new OrthographicCamera();
         viewportUI = new ScreenViewport(cameraUI);
+
+        LEVEL_UP = false;
+        debug = false;
+        paused = false;
+        gameOver = false;
+
 
         entities = new SnapshotArray<>();
         world = new World<>();
@@ -202,7 +209,7 @@ public class GameSreen extends ManagedScreen {
 
             drawTiles();
 
-            if(!paused && !gameOver){
+            if(!paused && !gameOver && !LEVEL_UP){
                 entityLogic(delta);
             }
 
@@ -222,23 +229,9 @@ public class GameSreen extends ManagedScreen {
 
             spriteBatchUI.end();
 
-            if(paused){
-                PauseGroup.setVisible(true);
-                viewportUI.apply();
-            }
-            else{
-                PauseGroup.setVisible(false);
-                viewport.apply();
-            }
-            if(gameOver){
-                GameOverGroup.setVisible(true);
-                viewportUI.apply();
-
-            }
-            else{
-                GameOverGroup.setVisible(false);
-
-            }
+            PauseGroup.setVisible(paused);
+            GameOverGroup.setVisible(gameOver);
+            UpgradesGroup.setVisible(LEVEL_UP);
 
             stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 60f));
             stage.draw();
@@ -502,6 +495,11 @@ public class GameSreen extends ManagedScreen {
         world.reset();
         bounds.clear();
 
+        LEVEL_UP = false;
+        debug = false;
+        paused = false;
+        gameOver = false;
+
         // Spawn Points
         roomTiles.clear();
         enemySpawnPoints.clear();
@@ -527,6 +525,7 @@ public class GameSreen extends ManagedScreen {
     public void CreateUI(){
         CreatePauseUI();
         CreateGameOverUI();
+        CreateUpgradeUI();
     }
 
     public void CreatePauseUI(){
@@ -612,6 +611,46 @@ public class GameSreen extends ManagedScreen {
         UpgradesGroup = new Group();
         UpgradesGroup.setVisible(false);
         UpgradesUI = new Table(game.skin);
+        UpgradesUI.setFillParent(true);
+
+        TextButton.TextButtonStyle style = game.skin.get(TextButton.TextButtonStyle.class);
+        BitmapFont font = style.font;
+        font.getData().setScale(2.0f);
+
+        final TextButton attackPowerUpgradeButton = new TextButton("AP +5", game.skin);
+        attackPowerUpgradeButton.addListener( new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                player.AP += 5;
+                LEVEL_UP = false;
+            }
+        });
+
+        final TextButton healthUpgradeButton = new TextButton("HP +5", game.skin);
+        healthUpgradeButton.addListener( new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                player.maxHP += 5;
+                LEVEL_UP = false;
+            }
+        });
+
+        final TextButton movementSpeedUpgradeButton = new TextButton("MS +0.5", game.skin);
+        movementSpeedUpgradeButton.addListener( new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                player.movementSpeed += 0.5f;
+                LEVEL_UP = false;
+            }
+        });
+
+        UpgradesUI.add(attackPowerUpgradeButton).pad(10).size(Gdx.graphics.getWidth() * 0.1f, Gdx.graphics.getHeight() * 0.05f).row();
+        UpgradesUI.add(healthUpgradeButton).pad(10).size(Gdx.graphics.getWidth() * 0.1f, Gdx.graphics.getHeight() * 0.05f).row();
+        UpgradesUI.add(movementSpeedUpgradeButton).pad(10).size(Gdx.graphics.getWidth() * 0.1f, Gdx.graphics.getHeight() * 0.05f).row();
+
+        UpgradesGroup.addActor(UpgradesUI);
+        UpgradesGroup.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        stage.addActor(UpgradesGroup);
     }
 
     public void renderGameUI(){
@@ -627,9 +666,30 @@ public class GameSreen extends ManagedScreen {
         shapeDrawerUI.setColor(Color.TEAL);
 
         // Current XP
+        float width = player.currentXP / player.nextLevelXP;
         shapeDrawerUI.filledRectangle(Gdx.graphics.getWidth() - (Gdx.graphics.getWidth() / 40.0f * 39.0f), ((Gdx.graphics.getHeight() / 40.0f) * 39.2f),
-            (Gdx.graphics.getWidth() - (Gdx.graphics.getWidth() / 40.0f * 2.0f)) * ((float) player.currentXP / player.nextLevelXP),
+            (Gdx.graphics.getWidth() - (Gdx.graphics.getWidth() / 40.0f * 2.0f)) * ( player.currentXP / player.nextLevelXP),
             Gdx.graphics.getHeight() / 40.0f - Gdx.graphics.getHeight() / 40.0f * 0.4f);
+    }
+
+    public void reset(){
+        viewport.apply();
+
+
+        LEVEL_UP = false;
+        debug = false;
+        paused = false;
+        gameOver = false;
+
+        spriteBatch.setProjectionMatrix(camera.combined);
+
+        //camera.zoom = 4.0f;
+        firstLevelSetup();
+
+        // For camera panning
+        targetPosition = new Vector3(player.x, player.y, 0); // Set your player's initial position here
+        followSpeed = 10.0f; // Adjust this value to control the camera's follow speed
+
     }
 
 }

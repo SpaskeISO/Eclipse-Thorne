@@ -33,8 +33,10 @@ public class Player extends Entity{
     public float invulnerabilityTimer;
     public int maxHP;
 
-    public int currentXP = 0;
-    public int nextLevelXP = 10;
+    // LVL
+    public float currentXP = 0;
+    public float nextLevelXP = 10;
+    public int Level = 0;
 
 
     public Player(float x, float y){
@@ -62,9 +64,10 @@ public class Player extends Entity{
     }
 
     public Player(float x, float y, Player player){
-        this.movementSpeed = 7.5f;
+        this.movementSpeed = player.movementSpeed;
+        this.AP = player.AP;
         castTimer = CAST_DELAY;
-        maxHP = 100;
+        maxHP = player.maxHP;
         HP = maxHP;
         this.currentXP = player.currentXP;
 
@@ -95,6 +98,15 @@ public class Player extends Entity{
             deltaX = 0;
             deltaY = 0;
             animationTime+=delta;
+
+            // lvl up
+            if(currentXP >= nextLevelXP){
+                Level++;
+                currentXP -= nextLevelXP;
+                nextLevelXP *= 1.5f;
+                HP = maxHP;
+                LEVEL_UP = true;
+            }
 
 
             //Movement
@@ -198,6 +210,7 @@ public class Player extends Entity{
                 }
                 else if(collision.other.userData instanceof Portal){
                     nextLevel = true;
+                    GameSreen.Level++;
                 }
 
             }
@@ -244,7 +257,7 @@ public class Player extends Entity{
         // Calculate the width of the health bar based on the current health value
         float healthBarWidth;
         if(HP == 0) healthBarWidth = 0;
-        else healthBarWidth = (float) HP / maxHP;
+        else healthBarWidth = HP / maxHP;
 
         // Draw the actual health bar
         shapeDrawer.setColor(Color.RED);
@@ -254,6 +267,7 @@ public class Player extends Entity{
 
     public void die() {
         isDead = true;
+        GameSreen.gameOver = true;
         animation = dyingAnimation;
         animationTime = 0; // Reset animation time to start the dying animation
     }

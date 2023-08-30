@@ -33,8 +33,8 @@ public abstract class Entity {
     public boolean flipY = false;
     public Vector2 direction;
 
-    public int HP; //Health Points
-    public int AP; //Attack Power
+    public float HP; //Health Points
+    public float AP; //Attack Power
 
 
     public Item<Entity> item;
