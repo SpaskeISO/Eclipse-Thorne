@@ -2,6 +2,8 @@ package com.spasic.eclipsethorne.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -53,7 +55,13 @@ public class GameSreen extends ManagedScreen {
     public static ShapeDrawer shapeDrawer;
     public static ShapeDrawer shapeDrawerUI;
     public static boolean nextLevel = false;
-    public static int Level = 1;
+    public static int Level = 0;
+
+    public static Sound fireballHit = Gdx.audio.newSound(Gdx.files.internal("sound effects/explosion.wav"));
+    public static Sound xpPickUp = Gdx.audio.newSound(Gdx.files.internal("sound effects/XP-PickUp.wav"));
+    public static Sound teleport = Gdx.audio.newSound(Gdx.files.internal("sound effects/teleport.wav"));
+    public static Sound levelUp = Gdx.audio.newSound(Gdx.files.internal("sound effects/LVLUP.wav"));
+    public static Music hurtSound = Gdx.audio.newMusic(Gdx.files.internal("sound effects/hurt2.wav"));
 
     // Camera
     public static ExtendViewport viewport;
@@ -112,6 +120,7 @@ public class GameSreen extends ManagedScreen {
     public Table GameOverUI;
     public Table UpgradesUI;
     public static boolean LEVEL_UP;
+    public static boolean levelUpSoundPlayed = false;
 
 
     public GameSreen(){
@@ -149,6 +158,7 @@ public class GameSreen extends ManagedScreen {
 
         stage = new Stage(viewportUI);
         Gdx.input.setInputProcessor(stage);
+
 
         spriteBatch.setProjectionMatrix(camera.combined);
 
@@ -231,6 +241,10 @@ public class GameSreen extends ManagedScreen {
 
             PauseGroup.setVisible(paused);
             GameOverGroup.setVisible(gameOver);
+            if(LEVEL_UP && !levelUpSoundPlayed){
+                levelUp.play();
+                levelUpSoundPlayed = true;
+            }
             UpgradesGroup.setVisible(LEVEL_UP);
 
             stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 60f));
@@ -256,6 +270,11 @@ public class GameSreen extends ManagedScreen {
 
     @Override
     public void dispose() {
+        fireballHit.dispose();
+        xpPickUp.dispose();
+        teleport.dispose();
+        levelUp.dispose();
+        hurtSound.dispose();
         textureAtlas.dispose();
     }
 
@@ -623,6 +642,7 @@ public class GameSreen extends ManagedScreen {
             public void clicked(InputEvent event, float x, float y) {
                 player.AP += 5;
                 LEVEL_UP = false;
+                levelUpSoundPlayed = false;
             }
         });
 
@@ -632,6 +652,7 @@ public class GameSreen extends ManagedScreen {
             public void clicked(InputEvent event, float x, float y) {
                 player.maxHP += 5;
                 LEVEL_UP = false;
+                levelUpSoundPlayed = false;
             }
         });
 
@@ -641,6 +662,7 @@ public class GameSreen extends ManagedScreen {
             public void clicked(InputEvent event, float x, float y) {
                 player.movementSpeed += 0.5f;
                 LEVEL_UP = false;
+                levelUpSoundPlayed = false;
             }
         });
 

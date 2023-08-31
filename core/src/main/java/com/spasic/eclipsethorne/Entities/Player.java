@@ -42,6 +42,7 @@ public class Player extends Entity{
     public Player(float x, float y){
         this.movementSpeed = 7.5f;
         castTimer = CAST_DELAY;
+        this.AP = 10;
         maxHP = 100;
         HP = maxHP;
 
@@ -109,6 +110,7 @@ public class Player extends Entity{
             }
 
 
+
             //Movement
             boolean left = Gdx.input.isKeyPressed(Input.Keys.A);
             boolean right = Gdx.input.isKeyPressed(Input.Keys.D);
@@ -133,19 +135,15 @@ public class Player extends Entity{
             }
             direction = new Vector2(MathUtils.cosDeg(angle), MathUtils.sinDeg(angle));
 
+            // Make player face the cursor
+            Vector3 mousePosition = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+            GameSreen.camera.unproject(mousePosition);
 
-            if(leftClick){
-                Vector3 mousePosition = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-                GameSreen.camera.unproject(mousePosition);
+            Vector2 spritePosition = new Vector2(x, y);
 
-                Vector2 spritePosition = new Vector2(x, y);
+            angle = MathUtils.atan2(mousePosition.y - spritePosition.y, mousePosition.x - spritePosition.x);
 
-                angle = MathUtils.atan2(mousePosition.y - spritePosition.y, mousePosition.x - spritePosition.x);
-
-                angle *= MathUtils.radiansToDegrees;
-
-
-            }
+            angle *= MathUtils.radiansToDegrees;
 
             if (castTimer > 0) {
                 castTimer -= delta;
@@ -188,6 +186,9 @@ public class Player extends Entity{
                     if (!enemy.isDying()) {
                         if(invulnerabilityTimer <= 0 && color == Color.WHITE){
                             HP -= enemy.AP;
+                            if(!hurtSound.isPlaying()){
+                                GameSreen.hurtSound.play();
+                            }
                             invulnerabilityTimer = INVULNERABILITY_TIME;
                             color = Color.GOLD;
                         }
@@ -206,11 +207,13 @@ public class Player extends Entity{
                     XP xp = (XP) collision.other.userData;
                     player.currentXP += xp.xpValue;
                     xp.die();
+                    xpPickUp.play();
 
                 }
                 else if(collision.other.userData instanceof Portal){
                     nextLevel = true;
                     GameSreen.Level++;
+                    teleport.play();
                 }
 
             }

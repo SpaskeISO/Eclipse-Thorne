@@ -87,6 +87,10 @@ public class Enemy extends Entity{
         bboxWidth = (float) (animation.getKeyFrames()[0].getRegionWidth() / animation.getKeyFrames()[0].getRegionWidth()) * SCALE;
         bboxHeight = (float) (animation.getKeyFrames()[0].getRegionHeight() / animation.getKeyFrames()[0].getRegionHeight()) * SCALE;
 
+        // Level Scaling;
+        this.HP += 0.4f * Level;
+        this.AP += 0.2f * Level;
+        this.movementSpeed += 0.02f * Level;
 
         this.angle = 90;
         this.direction = new Vector2();
@@ -178,6 +182,7 @@ public class Enemy extends Entity{
 
                 //ran into enemy: kill magicBolt
                 entities.removeValue(magicBolt, true);
+                fireballHit.play(0.2f);
                 if (magicBolt.item != null) {
                     world.remove(magicBolt.item);
                     magicBolt.item = null;

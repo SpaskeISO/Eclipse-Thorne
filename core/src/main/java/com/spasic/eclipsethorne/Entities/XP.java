@@ -16,7 +16,7 @@ public class XP extends Entity{
 
     public static final Animation<TextureRegion> xpAnimation = new Animation<TextureRegion>(1, textureAtlas.findRegions("XP"), Animation.PlayMode.LOOP);
 
-    public int xpValue;
+    public float xpValue;
 
     public XP(float x, float y, float xpModifier){
         this.x = x;
@@ -27,7 +27,8 @@ public class XP extends Entity{
         bboxWidth = (float) temp.getRegionWidth() / temp.getRegionWidth() / 3.0f;
         bboxHeight = (float) temp.getRegionHeight() / temp.getRegionHeight() / 3.0f;
 
-        xpValue = (int) (1 * xpModifier);
+        xpValue = (1 * xpModifier);
+        xpValue += 0.4f * Level;
 
         item = new Item<>(this);
         entities.add(this);

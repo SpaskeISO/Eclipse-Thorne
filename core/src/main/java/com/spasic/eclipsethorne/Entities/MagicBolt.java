@@ -18,7 +18,6 @@ public class MagicBolt extends Entity{
     public static final magicBoltCollisionFIlter MAGIC_BOLT_COLLISION_FILTER = new magicBoltCollisionFIlter();
 
     public MagicBolt(float angle, float x, float y){
-        AP = 10;
         HP = 1;
         this.angle = angle;
         this.movementSpeed = 12.5f;
@@ -49,7 +48,7 @@ public class MagicBolt extends Entity{
                 if (collision.other.userData instanceof Enemy) {
                     Enemy enemy = (Enemy) collision.other.userData;
                     if (!enemy.isDying()) {
-                        enemy.HP -= this.AP;
+                        enemy.HP -= player.AP;
 
                         if(enemy.HP < 0) enemy.die();
                     }
@@ -59,6 +58,7 @@ public class MagicBolt extends Entity{
                     if(collision.other.userData instanceof BasicBlock){
                         //ran into wall: kill magicBolt
                         entities.removeValue(this, true);
+                        fireballHit.play(0.2f);
                         if (this.item != null) {
                             world.remove(this.item);
                             this.item = null;
