@@ -88,9 +88,9 @@ public class Enemy extends Entity{
         bboxHeight = (float) (animation.getKeyFrames()[0].getRegionHeight() / animation.getKeyFrames()[0].getRegionHeight()) * SCALE;
 
         // Level Scaling;
-        this.HP += 0.4f * Level;
-        this.AP += 0.2f * Level;
-        this.movementSpeed += 0.02f * Level;
+        this.HP += 0.4f * GameLevel;
+        this.AP += 0.2f * GameLevel;
+        this.movementSpeed += 0.02f * GameLevel;
 
         this.angle = 90;
         this.direction = new Vector2();

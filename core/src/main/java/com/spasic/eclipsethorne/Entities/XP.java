@@ -28,7 +28,7 @@ public class XP extends Entity{
         bboxHeight = (float) temp.getRegionHeight() / temp.getRegionHeight() / 3.0f;
 
         xpValue = (1 * xpModifier);
-        xpValue += 0.4f * Level;
+        xpValue += 0.4f * GameLevel;
 
         item = new Item<>(this);
         entities.add(this);

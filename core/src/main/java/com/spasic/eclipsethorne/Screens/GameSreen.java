@@ -55,7 +55,7 @@ public class GameSreen extends ManagedScreen {
     public static ShapeDrawer shapeDrawer;
     public static ShapeDrawer shapeDrawerUI;
     public static boolean nextLevel = false;
-    public static int Level = 0;
+    public static int GameLevel = 0;
 
     public static Sound fireballHit = Gdx.audio.newSound(Gdx.files.internal("sound effects/explosion.wav"));
     public static Sound xpPickUp = Gdx.audio.newSound(Gdx.files.internal("sound effects/XP-PickUp.wav"));
@@ -168,7 +168,6 @@ public class GameSreen extends ManagedScreen {
         dungeonGenerator.setMaxRoomSize(35);
         dungeonGenerator.setTolerance(10); // Max difference between width and height.
         dungeonGenerator.setMinRoomSize(9);
-
         //camera.zoom = 4.0f;
         firstLevelSetup();
 

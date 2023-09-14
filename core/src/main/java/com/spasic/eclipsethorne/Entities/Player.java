@@ -67,6 +67,8 @@ public class Player extends Entity{
     public Player(float x, float y, Player player){
         this.movementSpeed = player.movementSpeed;
         this.AP = player.AP;
+        this.Level = player.Level;
+        this.nextLevelXP = player.nextLevelXP;
         castTimer = CAST_DELAY;
         maxHP = player.maxHP;
         HP = maxHP;
@@ -161,7 +163,6 @@ public class Player extends Entity{
 
             if (leftClick && castTimer == 0) {
                 castTimer = CAST_DELAY;
-                //arrowSound.play();
                 MagicBolt magicBolt = new MagicBolt(angle, (player.x), (player.y));
                 magicBolt.x = ((player.x + bboxX + (player.bboxWidth / 2.0f) * magicBolt.direction.x));
                 magicBolt.y = ((player.y + bboxY + (player.bboxHeight / 2.0f * magicBolt.direction.y)));
@@ -212,7 +213,7 @@ public class Player extends Entity{
                 }
                 else if(collision.other.userData instanceof Portal){
                     nextLevel = true;
-                    GameSreen.Level++;
+                    GameSreen.GameLevel++;
                     teleport.play();
                 }
 
